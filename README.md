@@ -162,6 +162,21 @@ before printing physical scanimation masks.
 * Cartridge/refill system
 * Microtube optical viewer
 
+### COMMANDS
+
+*pio device list
+## Verifica conexão com esp
+pio device monitor -p COM6 -b 115200
+
+## limpar tudo 
+pio run -t clean
+
+## recompilar 
+pio run
+
+## Gravar na tela 
+pio run -t upload --upload-port COM6
+
 ---
 
 ## Vision
