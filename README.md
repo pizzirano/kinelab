@@ -1,93 +1,301 @@
 # KineLab
 
-**Laboratório de animação óptica** para experimentação com técnicas de ilusão de movimento.
-
-### Técnicas suportadas
-- Cinegramas (Kinegrams)
-- Scanimation
-- Animação de grade de barreira
-- Efeitos Moiré
-- Pré-visualizações lenticulares
-- Displays TFT com ESP32
+> Laboratório de animação óptica para experimentação com técnicas de ilusão de movimento utilizando ESP32, displays TFT e padrões visuais interativos.
 
 ---
 
-## Como usar no GitHub Codespaces
+## Índice
 
-### 1. Instalação Inicial (executar uma única vez)
+- [Visão Geral](#visão-geral)
+- [Técnicas Suportadas](#técnicas-suportadas)
+- [Requisitos](#requisitos)
+- [Instalação no GitHub Codespaces](#instalação-no-github-codespaces)
+- [Comandos Disponíveis](#comandos-disponíveis)
+- [Gravação do ESP32](#gravação-do-esp32)
+- [Estrutura do Projeto](#estrutura-do-projeto)
+- [Tecnologias Utilizadas](#tecnologias-utilizadas)
+
+---
+
+# Visão Geral
+
+O KineLab é um ambiente de experimentação voltado para animações ópticas e técnicas de ilusão de movimento.
+
+O projeto permite gerar e exibir padrões animados utilizando:
+
+- ESP32
+- Displays TFT
+- Arquivos SPIFFS
+- Técnicas ópticas tradicionais
+
+---
+
+# Técnicas Suportadas
+
+## Cinegramas (Kinegrams)
+
+Animações produzidas através do movimento de uma grade sobre uma imagem intercalada.
+
+## Scanimation
+
+Sequências de quadros ocultas por uma máscara móvel.
+
+## Barrier Grid Animation
+
+Animações baseadas em grades de barreira.
+
+## Efeitos Moiré
+
+Padrões visuais produzidos pela sobreposição de grades.
+
+## Pré-visualizações Lenticulares
+
+Simulação digital de imagens lenticulares.
+
+## Displays TFT com ESP32
+
+Renderização direta em displays embarcados.
+
+---
+
+# Requisitos
+
+## Software
+
+- Git
+- Python 3
+- PlatformIO
+- Just
+
+## Hardware
+
+- ESP32
+- Display TFT compatível
+- Cabo USB
+
+---
+
+# Instalação no GitHub Codespaces
+
+## Instalar Just
 
 ```bash
-# Instalar Just
-curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/.local/bin
+curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | \
+bash -s -- --to ~/.local/bin
+```
 
-# Configurar PATH (Just + PlatformIO)
+## Configurar PATH
+
+```bash
 echo 'export PATH="$HOME/.local/bin:$HOME/.platformio/penv/bin:$PATH"' >> ~/.bashrc
 source ~/.bashrc
+```
 
-# Instalar PlatformIO
-curl -fsSL https://raw.githubusercontent.com/platformio/platformio-core-installer/master/get-platformio.py -o get-platformio.py
+## Instalar PlatformIO
+
+```bash
+curl -fsSL \
+https://raw.githubusercontent.com/platformio/platformio-core-installer/master/get-platformio.py \
+-o get-platformio.py
+
 python3 get-platformio.py
+```
 
-2. Comandos Principais (com Just)
+## Verificar Instalação
 
-Comando,Descrição
-just build,Compilar o firmware
-just buildfs,Gerar spiffs.bin (imagens da pasta data/)
-just upload,Gravar firmware no ESP32
-just uploadfs,Gravar apenas o sistema de arquivos
-just monitor,Abrir Monitor Serial
-just clean,Limpar build anterior
-just all,Limpar + Build + Upload (completo)
-just help-flasher,Mostrar guia do ESP Web Flasher
-just status,Verificar estado do projeto
+```bash
+pio --version
+just --version
+```
 
-Gravar no ESP32 usando ESP Web Flasher
+---
 
-Acesse: https://espressif.github.io/esptool-js/
-Clique em Connect e selecione a porta do seu ESP32.
-Configure as 4 linhas exatamente assim:
+# Comandos Disponíveis
+
+## Compilação
+
+### Build do Firmware
+
+```bash
+just build
+```
+
+Compila o firmware principal.
+
+### Build do SPIFFS
+
+```bash
+just buildfs
+```
+
+Gera o arquivo:
+
+```text
+spiffs.bin
+```
+
+a partir do conteúdo da pasta:
+
+```text
+data/
+```
+
+---
+
+## Upload
+
+### Upload do Firmware
+
+```bash
+just upload
+```
+
+### Upload do SPIFFS
+
+```bash
+just uploadfs
+```
+
+### Upload Completo
+
+```bash
+just all
+```
+
+Executa:
+
+```text
+clean
+↓
+build
+↓
+upload
+```
+
+---
+
+## Monitoramento
+
+### Serial Monitor
+
+```bash
+just monitor
+```
+
+---
+
+## Utilitários
+
+### Limpeza
+
+```bash
+just clean
+```
+
+### Status do Projeto
+
+```bash
+just status
+```
+
+### Ajuda do Web Flasher
+
+```bash
+just help-flasher
+```
+
+---
+
+# Gravação do ESP32
+
+## ESP Web Flasher
+
+Acesse:
+
+https://espressif.github.io/esptool-js/
+
+---
+
+## Arquivos de Flash
+
+| Endereço | Arquivo |
+|-----------|----------|
+| `0x1000` | `bootloader.bin` |
+| `0x8000` | `partitions.bin` |
+| `0x10000` | `firmware.bin` |
+| `0x290000` | `spiffs.bin` |
+
+---
+
+## Configurações Recomendadas
+
+| Configuração | Valor |
+|-------------|--------|
+| Flash Size | 4MB |
+| Flash Mode | DIO |
+| Flash Frequency | 40 MHz |
+| Baud Rate | 115200 |
+
+---
+
+## Entrar em Modo de Programação
+
+Caso o upload falhe:
+
+1. Pressione e segure **BOOT**.
+2. Pressione **EN**.
+3. Solte **EN**.
+4. Solte **BOOT**.
+5. Inicie a gravação.
+
+---
+
+# Estrutura do Projeto
+
+```text
+KineLab/
+├── data/
+│   ├── images/
+│   └── animations/
+│
+├── src/
+│   ├── main.cpp
+│   └── display/
+│
+├── include/
+│
+├── docs/
+│
+├── platformio.ini
+├── justfile
+└── README.md
+```
+
+---
+
+# Tecnologias Utilizadas
+
+- ESP32
+- PlatformIO
+- SPIFFS
+- TFT_eSPI
+- GitHub Codespaces
+- Just
+
+---
+
+# Fluxo de Desenvolvimento
+
+```text
+Editar Código
+      ↓
+just build
+      ↓
+just upload
+      ↓
+just monitor
+      ↓
+Testar no Display
+```
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-LinhaEndereçoArquivoObservação10x1000bootloader.binBootloader20x8000partitions.binTabela de partições30x10000firmware.binFirmware principal40x290000spiffs.binArquivos da pasta data/
-Configurações recomendadas:
-
-Flash Size: 4MB
-Flash Mode: dio
-Flash Frequency: 40m
-Baud Rate: 115200
-
-Dica: Segure o botão BOOT + pressione EN antes de clicar em Program.
