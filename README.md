@@ -1,184 +1,79 @@
 # KineLab
 
-Optical animation laboratory for experimenting with:
+Laboratório de animação óptica para experimentação com:
+- Cinegramas
+- Scanimation
+- Animação de grade de barreira
+- Efeitos Moiré
+- Pré-visualizações lenticulares
+- Displays TFT ESP32
 
-* Kinegrams
-* Scanimation
-* Barrier-grid animation
-* Moiré effects
-* Lenticular previews
-* ESP32 TFT displays
+## Como usar no Codespaces / GitHub
 
-The goal of this project is to create a reusable playground for studying how optical animations work before moving to physical media such as lenticular sheets, microtube viewers, postcards, and future integrations with Giph5Lens.
+Instale o Just manualmente
+curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/.local/bin
 
----
+# Atualize o PATH
+echo 'export PATH="$HOME/.local/bin:$HOME/.platformio/penv/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
 
-## Features
+# Verifique se instalou
+just --version
 
-Current development goals:
+# Instalar PlatformIO (uma vez)
+install-platformio:
+    curl -fsSL https://raw.githubusercontent.com/platformio/platformio-core-installer/master/get-platformio.py -o get-platformio.py
+    python3 get-platformio.py
 
-* ESP32 + TFT display support
-* Virtual scanimation mask renderer
-* Kinegram preview mode
-* Physical mask testing mode
-* Frame interlacing experiments
-* Optical calibration utilities
-* BMP asset loading
-* SD card support (future)
+# Configurar PATH (PlatformIO + Just)
+setup:
+    @echo 'export PATH="$HOME/.local/bin:$HOME/.platformio/penv/bin:$PATH"' >> ~/.bashrc
+    source ~/.bashrc
+    @echo "Caminhos configurados!"
 
----
+# ====================== COMANDOS PRINCIPAIS ======================
 
-## Project Structure
+# Limpar build anterior
+clean:
+    pio run -t clean
 
-```text
-kinelab/
-│
-├── platformio.ini
-│
-├── include/
-│   ├── kinegram_config.h
-│   ├── kinegram_engine.h
-│   ├── image_loader.h
-│   └── mask_renderer.h
-│
-├── src/
-│   ├── main.cpp
-│   ├── kinegram_engine.cpp
-│   ├── image_loader.cpp
-│   └── mask_renderer.cpp
-│
-├── data/
-│   └── config/
-│       └── settings.json
-│
-└── scripts/
-    └── generate_test_bmps.py
-```
+# Build completo do firmware
+build:
+    pio run
 
----
+# Build apenas do sistema de arquivos (imagens BMP)
+buildfs:
+    pio run -t buildfs
 
-## Requirements
+# Upload firmware + spiffs
+upload:
+    pio run -t upload
 
-### Hardware
+# Upload apenas do filesystem (rápido)
+uploadfs:
+    pio run -t uploadfs
 
-* ESP32 development board
-* TFT display (ST7789 or compatible)
-* USB cable
+# Monitor Serial
+monitor:
+    pio device monitor -b 115200
 
-### Software
+# Tudo de uma vez (limpar + build + upload)
+all: clean build buildfs upload
 
-* PlatformIO
-* VS Code (recommended)
-* Python 3.x
+# ====================== AJUDA ======================
 
----
+# Mostrar ajuda do Web Flasher
+help-flasher:
+    @echo "=== ESP Web Flasher ==="
+    @echo "1. Abra → https://espressif.github.io/esptool-js/"
+    @echo "2. Connect no ESP32"
+    @echo "3. Configure as 4 linhas:"
+    @echo "   0x1000     → bootloader.bin"
+    @echo "   0x8000     → partitions.bin"
+    @echo "   0x10000    → firmware.bin"
+    @echo "   0x290000   → spiffs.bin"
+    @echo "4. Flash Size = 4MB | Baud Rate = 115200"
 
-## Build
-
-Compile firmware:
-
-```bash
-pio run
-```
-
-Expected output:
-
-```text
-Successfully created esp32 image.
-```
-
-Generated firmware:
-
-```text
-.pio/build/esp32dev/firmware.bin
-```
-
----
-
-## Upload to ESP32
-
-### Option 1 — PlatformIO
-
-```bash
-pio run -t upload
-```
-
-### Option 2 — ESP Flash Download Tool
-
-Flash addresses:
-
-```text
-bootloader.bin  -> 0x1000
-partitions.bin  -> 0x8000
-firmware.bin    -> 0x10000
-```
-
-Uploading a new firmware replaces any existing firmware on the device (including Marauder).
-
----
-
-## Current Prototype
-
-Current firmware renders:
-
-* test stripe pattern
-* virtual moving mask
-* basic kinegram simulation
-
-This allows rapid testing of:
-
-* stripe width
-* mask offset
-* animation speed
-* interlacing concepts
-
-before printing physical scanimation masks.
-
----
-
-## Roadmap
-
-### Phase 1
-
-* Virtual mask simulation
-* BMP rendering
-* Configurable stripe width
-
-### Phase 2
-
-* SD card asset loading
-* Multiple animation sets
-* Runtime settings
-
-### Phase 3
-
-* Physical scanimation calibration
-* Lenticular preview mode
-* Interlacing generator
-
-### Phase 4
-
-* Giph5Lens integration
-* Cartridge/refill system
-* Microtube optical viewer
-
-### COMMANDS
-
-*pio device list
-## Verifica conexão com esp
-pio device monitor -p COM6 -b 115200
-
-## limpar tudo 
-pio run -t clean
-
-## recompilar 
-pio run
-
-## Gravar na tela 
-pio run -t upload --upload-port COM6
-
----
-
-## Vision
-
-KineLab is intended to become the experimental optical engine behind future Giph5Lens projects, enabling rapid prototyping of optical animation techniques before physical production.
+# Status do projeto
+status:
+    pio run --target check
