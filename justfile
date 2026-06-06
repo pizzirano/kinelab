@@ -1,62 +1,93 @@
-# KineLab - Justfile
+# =============================================================================
+# KINELAB - COMANDOS DE DESENVOLVIMENTO
+# =============================================================================
 
-# ====================== INSTALAÇÃO ======================
-# Instalar PlatformIO (rode apenas uma vez)
+set shell := ["powershell.exe", "-NoProfile", "-Command"]
+
+# Lista todos os comandos disponíveis
+default:
+    @just --list
+
+# =============================================================================
+# INSTALAÇÃO
+# =============================================================================
+
+# Instala o PlatformIO Core
 install-platformio:
-    curl -fsSL https://raw.githubusercontent.com/platformio/platformio-core-installer/master/get-platformio.py -o get-platformio.py
-    python3 get-platformio.py
+    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/platformio/platformio-core-installer/master/get-platformio.py" -OutFile "get-platformio.py"
+    python get-platformio.py
 
-# Configurar PATH do PlatformIO
-setup-path:
-    echo 'export PATH="$HOME/.platformio/penv/bin:$PATH"' >> ~/.bashrc
-    source ~/.bashrc
-    echo "✅ PlatformIO configurado!"
+# Verifica se o PlatformIO está instalado
+check-platformio:
+    pio --version
 
-# ====================== COMANDOS BÁSICOS ======================
+# =============================================================================
+# BUILD E FLASH
+# =============================================================================
 
-# Limpar build
+# Limpa artefatos de compilação
 clean:
     pio run -t clean
 
-# Build completo (firmware + spiffs)
+# Compila o firmware
 build:
     pio run
 
-# Build apenas do sistema de arquivos (quando altera imagens na pasta data/)
+# Compila sistema de arquivos
 buildfs:
     pio run -t buildfs
 
-# Upload completo para o ESP32
+# Envia firmware para o ESP32
 upload:
     pio run -t upload
 
-# Upload apenas do filesystem (mais rápido)
+# Envia sistema de arquivos para o ESP32
 uploadfs:
     pio run -t uploadfs
 
-# Monitor Serial
+# Monitor serial
 monitor:
     pio device monitor -b 115200
 
-# Limpar + Build completo + Upload
-all: clean build buildfs upload
+# Executa fluxo completo
+all:
+    just clean
+    just build
+    just buildfs
+    just upload
 
-# ====================== ESP WEB FLASHER ======================
+# =============================================================================
+# ESP WEB FLASHER
+# =============================================================================
 
-# Mensagem de ajuda para Web Flasher
+# Instruções para gravação via navegador
 help-flasher:
-    @echo "=== ESP Web Flasher ==="
-    @echo "1. Abra: https://espressif.github.io/esptool-js/"
-    @echo "2. Conecte o ESP32"
-    @echo "3. Configure 4 linhas:"
-    @echo "   0x1000     → bootloader.bin"
-    @echo "   0x8000     → partitions.bin"
-    @echo "   0x10000    → firmware.bin"
-    @echo "   0x290000   → spiffs.bin"
-    @echo "4. Flash Size = 4MB | Baud = 115200"
-    @echo "5. Segure BOOT + aperte EN antes de Program"
+    Write-Host ""
+    Write-Host "=== ESP WEB FLASHER ==="
+    Write-Host ""
+    Write-Host "https://espressif.github.io/esptool-js/"
+    Write-Host ""
+    Write-Host "0x1000   -> bootloader.bin"
+    Write-Host "0x8000   -> partitions.bin"
+    Write-Host "0x10000  -> firmware.bin"
+    Write-Host "0x290000 -> spiffs.bin"
+    Write-Host ""
+    Write-Host "Flash Size: 4MB"
+    Write-Host "Baud: 115200"
 
-# ====================== STATUS ======================
+# =============================================================================
+# STATUS
+# =============================================================================
+
 status:
-    @echo "KineLab - Status do Projeto"
-    pio run --target check
+    Write-Host ""
+    Write-Host "================================="
+    Write-Host "KineLab - Status"
+    Write-Host "================================="
+    Write-Host ""
+
+    pio --version
+
+    Write-Host ""
+    Write-Host "Arquivos do projeto:"
+    Get-ChildItem
