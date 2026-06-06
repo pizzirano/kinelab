@@ -1,79 +1,93 @@
 # KineLab
 
-Laboratório de animação óptica para experimentação com:
-- Cinegramas
+**Laboratório de animação óptica** para experimentação com técnicas de ilusão de movimento.
+
+### Técnicas suportadas
+- Cinegramas (Kinegrams)
 - Scanimation
 - Animação de grade de barreira
 - Efeitos Moiré
 - Pré-visualizações lenticulares
-- Displays TFT ESP32
+- Displays TFT com ESP32
 
-## Como usar no Codespaces / GitHub
+---
 
-Instale o Just manualmente
+## Como usar no GitHub Codespaces
+
+### 1. Instalação Inicial (executar uma única vez)
+
+```bash
+# Instalar Just
 curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/.local/bin
 
-# Atualize o PATH
+# Configurar PATH (Just + PlatformIO)
 echo 'export PATH="$HOME/.local/bin:$HOME/.platformio/penv/bin:$PATH"' >> ~/.bashrc
 source ~/.bashrc
 
-# Verifique se instalou
-just --version
+# Instalar PlatformIO
+curl -fsSL https://raw.githubusercontent.com/platformio/platformio-core-installer/master/get-platformio.py -o get-platformio.py
+python3 get-platformio.py
 
-# Instalar PlatformIO (uma vez)
-install-platformio:
-    curl -fsSL https://raw.githubusercontent.com/platformio/platformio-core-installer/master/get-platformio.py -o get-platformio.py
-    python3 get-platformio.py
+2. Comandos Principais (com Just)
 
-# Configurar PATH (PlatformIO + Just)
-setup:
-    @echo 'export PATH="$HOME/.local/bin:$HOME/.platformio/penv/bin:$PATH"' >> ~/.bashrc
-    source ~/.bashrc
-    @echo "Caminhos configurados!"
+Comando,Descrição
+just build,Compilar o firmware
+just buildfs,Gerar spiffs.bin (imagens da pasta data/)
+just upload,Gravar firmware no ESP32
+just uploadfs,Gravar apenas o sistema de arquivos
+just monitor,Abrir Monitor Serial
+just clean,Limpar build anterior
+just all,Limpar + Build + Upload (completo)
+just help-flasher,Mostrar guia do ESP Web Flasher
+just status,Verificar estado do projeto
 
-# ====================== COMANDOS PRINCIPAIS ======================
+Gravar no ESP32 usando ESP Web Flasher
 
-# Limpar build anterior
-clean:
-    pio run -t clean
+Acesse: https://espressif.github.io/esptool-js/
+Clique em Connect e selecione a porta do seu ESP32.
+Configure as 4 linhas exatamente assim:
 
-# Build completo do firmware
-build:
-    pio run
 
-# Build apenas do sistema de arquivos (imagens BMP)
-buildfs:
-    pio run -t buildfs
 
-# Upload firmware + spiffs
-upload:
-    pio run -t upload
 
-# Upload apenas do filesystem (rápido)
-uploadfs:
-    pio run -t uploadfs
 
-# Monitor Serial
-monitor:
-    pio device monitor -b 115200
 
-# Tudo de uma vez (limpar + build + upload)
-all: clean build buildfs upload
 
-# ====================== AJUDA ======================
 
-# Mostrar ajuda do Web Flasher
-help-flasher:
-    @echo "=== ESP Web Flasher ==="
-    @echo "1. Abra → https://espressif.github.io/esptool-js/"
-    @echo "2. Connect no ESP32"
-    @echo "3. Configure as 4 linhas:"
-    @echo "   0x1000     → bootloader.bin"
-    @echo "   0x8000     → partitions.bin"
-    @echo "   0x10000    → firmware.bin"
-    @echo "   0x290000   → spiffs.bin"
-    @echo "4. Flash Size = 4MB | Baud Rate = 115200"
 
-# Status do projeto
-status:
-    pio run --target check
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+LinhaEndereçoArquivoObservação10x1000bootloader.binBootloader20x8000partitions.binTabela de partições30x10000firmware.binFirmware principal40x290000spiffs.binArquivos da pasta data/
+Configurações recomendadas:
+
+Flash Size: 4MB
+Flash Mode: dio
+Flash Frequency: 40m
+Baud Rate: 115200
+
+Dica: Segure o botão BOOT + pressione EN antes de clicar em Program.
