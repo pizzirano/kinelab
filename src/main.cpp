@@ -72,7 +72,7 @@ void setup()
     digitalWrite(TFT_BACKLIGHT_PIN, HIGH);
 
     tft.init();
-    tft.setRotation(1);
+    tft.setRotation(3);
     tft.fillScreen(TFT_BLACK);
 
     Serial.println("=== kinegram-lab booting ===");
