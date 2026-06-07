@@ -1,48 +1,120 @@
 #include <Arduino.h>
+#include <SPIFFS.h>
 #include <TFT_eSPI.h>
 
-TFT_eSPI tft = TFT_eSPI();
+#include "image_loader.h"
+#include "kinegram_config.h"
+#include "kinegram_engine.h"
 
-int x = 30;
-int dir = 1;
+TFT_eSPI tft = TFT_eSPI();
+KinegramEngine engine;
+
+namespace {
+String currentImage = "";
+int stripeWidth = STRIPE_WIDTH;
+int animationSpeed = ANIMATION_SPEED;
+int frameCount = 1;
+KinegramMode currentMode = MODE_AUTO;
+
+void printModeName(KinegramMode mode)
+{
+    switch (mode) {
+        case MODE_PREVIEW: Serial.println("[mode] preview"); break;
+        case MODE_MANUAL: Serial.println("[mode] manual"); break;
+        case MODE_PHYSICAL: Serial.println("[mode] physical"); break;
+        default: Serial.println("[mode] auto"); break;
+    }
+}
+
+void handleCommand(const String& command)
+{
+    if (command == "m0") {
+        currentMode = MODE_PREVIEW;
+        engine.setMode(currentMode);
+        printModeName(currentMode);
+    } else if (command == "m1") {
+        currentMode = MODE_MANUAL;
+        engine.setMode(currentMode);
+        printModeName(currentMode);
+    } else if (command == "m2") {
+        currentMode = MODE_PHYSICAL;
+        engine.setMode(currentMode);
+        printModeName(currentMode);
+    } else if (command == "m3") {
+        currentMode = MODE_AUTO;
+        engine.setMode(currentMode);
+        printModeName(currentMode);
+    } else if (command.startsWith("o+")) {
+        int delta = command.substring(2).toInt();
+        engine.setOffset(engine.getOffset() + delta);
+        Serial.println("[offset] " + String(engine.getOffset()));
+    } else if (command.startsWith("o-")) {
+        int delta = command.substring(2).toInt();
+        engine.setOffset(engine.getOffset() - delta);
+        Serial.println("[offset] " + String(engine.getOffset()));
+    } else if (command.startsWith("o=")) {
+        engine.setOffset(command.substring(2).toInt());
+        Serial.println("[offset] " + String(engine.getOffset()));
+    } else if (command == "s?") {
+        Serial.println("[settings] stripe=" + String(stripeWidth) + " speed=" + String(animationSpeed) + " frames=" + String(frameCount));
+    } else if (command == "i?") {
+        Serial.println("[image] " + currentImage);
+    }
+}
+}
 
 void setup()
 {
     Serial.begin(115200);
     delay(500);
-    
-    Serial.println("\n\n=== KineLab Iniciado ===");
 
-    // Backlight da placa CYD
-    pinMode(21, OUTPUT);
-    digitalWrite(21, HIGH);
-    Serial.println("Backlight ligado (pino 21)");
+    pinMode(TFT_BACKLIGHT_PIN, OUTPUT);
+    digitalWrite(TFT_BACKLIGHT_PIN, HIGH);
 
-    // Inicializa a tela
     tft.init();
-    
-    // === TESTE DE ROTAÇÃO - Mude o número e teste uma por uma ===
-    tft.setRotation(1);        // ← Teste 0, 1, 2 ou 3
+    tft.setRotation(1);
+    tft.fillScreen(TFT_BLACK);
+
+    Serial.println("=== kinegram-lab booting ===");
+
+    if (!SPIFFS.begin(true)) {
+        Serial.println("[SPIFFS] mount failed");
+        return;
+    }
+    Serial.println("[SPIFFS] mounted OK");
+
+    if (!ImageLoader::loadSettings(stripeWidth, animationSpeed, frameCount)) {
+        Serial.println("[settings] using defaults");
+    } else {
+        Serial.println("[settings] loaded OK");
+    }
+
+    engine.begin();
+    engine.setMode(currentMode);
+    engine.setSpeed(animationSpeed);
+
+    currentImage = ImageLoader::findFirstBmp();
+    if (currentImage.length() == 0) {
+        currentImage = "/test_anim.bmp";
+    }
+
+    Serial.println("[main] auto-selected image: " + currentImage);
+    Serial.println("[Engine] ready");
+    Serial.println("=== ready ===");
 
     tft.fillScreen(TFT_BLACK);
-    
-    Serial.println("TFT OK - Rotação: " + String(tft.getRotation()));
-    Serial.println("Resolução: " + String(tft.width()) + "x" + String(tft.height()));
+    engine.renderFrame(tft, currentImage.c_str());
 }
 
 void loop()
 {
-    tft.fillScreen(TFT_BLACK);
+    if (Serial.available() > 0) {
+        String command = Serial.readStringUntil('\n');
+        command.trim();
+        handleCommand(command);
+    }
 
-    // Desenho de teste
-    tft.fillCircle(x, 160, 35, TFT_BLUE);
-    tft.drawString("Teste CYD", 40, 80, 4);
-    tft.drawString("Rotacao: " + String(tft.getRotation()), 40, 220, 2);
-
-    // Movimento do círculo
-    x += dir * 10;
-    if (x > 200) dir = -1;
-    if (x < 40)  dir = 1;
-
-    delay(40);
+    engine.update();
+    engine.renderFrame(tft, currentImage.c_str());
+    delay(16);
 }

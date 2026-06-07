@@ -370,8 +370,9 @@ KineLab/
 │       ├── frame_001.svg
 │       └── frame_002.svg
 │
-├── data/                      ← BMPs gerados → upload para SPIFFS
-│   └── *.bmp
+├── data/                      ← arquivos SPIFFS (layout plano)
+│   ├── settings.json          ← configuração em /settings.json
+│   └── test_anim.bmp          ← imagem em /test_anim.bmp
 │
 ├── temp/                      ← frames intermediários (gerado automaticamente)
 │
@@ -413,7 +414,7 @@ Criar ou editar SVG/GIF em assets/
 just build-kinegram assets/input.svg
           │
           ▼
-just uploadfs          ← sobe data/*.bmp para SPIFFS
+just uploadfs          ← sobe data/ para SPIFFS em layout plano
           │
           ▼
 just monitor           ← verifica Serial
