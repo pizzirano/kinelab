@@ -94,6 +94,7 @@ void setup()
     engine.setSpeed(animationSpeed);
 
     currentImage = ImageLoader::findFirstBmp();
+    if (!currentImage.startsWith("/")) { currentImage = "/" + currentImage; }
     if (currentImage.length() == 0) {
         currentImage = "/test_anim.bmp";
     }
