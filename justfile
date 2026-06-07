@@ -2,9 +2,9 @@
 # KINELAB - COMANDOS DE DESENVOLVIMENTO
 # =============================================================================
 
-set shell := ["powershell.exe", "-NoProfile", "-Command"]
+set shell := ["sh", "-cu"]
 
-# Lista todos os comandos disponíveis
+# Lista todos os comandos disponíveis.
 default:
     @just --list
 
@@ -12,12 +12,12 @@ default:
 # INSTALAÇÃO
 # =============================================================================
 
-# Instala o PlatformIO Core
+# Instala o PlatformIO Core localmente.
 install-platformio:
-    Invoke-WebRequest -Uri "https://raw.githubusercontent.com/platformio/platformio-core-installer/master/get-platformio.py" -OutFile "get-platformio.py"
+    curl -fsSL https://raw.githubusercontent.com/platformio/platformio-core-installer/master/get-platformio.py -o get-platformio.py
     python get-platformio.py
 
-# Verifica se o PlatformIO está instalado
+# Verifica se o PlatformIO está instalado.
 check-platformio:
     pio --version
 
@@ -25,31 +25,43 @@ check-platformio:
 # BUILD E FLASH
 # =============================================================================
 
-# Limpa artefatos de compilação
+# Limpa artefatos de compilação e arquivos temporários.
 clean:
     pio run -t clean
+    rm -rf temp
+    rm -f data/*.bmp
 
-# Compila o firmware
+# Compila o firmware principal.
 build:
     pio run
 
-# Compila sistema de arquivos
+# Compila o sistema de arquivos SPIFFS.
 buildfs:
     pio run -t buildfs
 
-# Envia firmware para o ESP32
+# Envia o firmware para o ESP32.
 upload:
-    pio run -t upload
+    pio run --target upload
 
-# Envia sistema de arquivos para o ESP32
+# Envia o sistema de arquivos para o ESP32.
 uploadfs:
-    pio run -t uploadfs
+    pio run --target uploadfs
 
-# Monitor serial
+# Abre o monitor serial com baud rate 115200.
 monitor:
-    pio device monitor -b 115200
+    pio device monitor --baud 115200
 
-# Executa fluxo completo
+# Gera um kinegram a partir de um arquivo SVG/PNG/GIF.
+build-kinegram FILE="assets/input.svg":
+    python tools/build_kinegram.py "{{FILE}}"
+
+# Gera o BMP, envia o SPIFFS e abre o monitor serial.
+test-image FILE="assets/input.svg":
+    just build-kinegram "{{FILE}}"
+    just uploadfs
+    just monitor
+
+# Executa o fluxo completo de build e upload.
 all:
     just clean
     just build
@@ -60,34 +72,35 @@ all:
 # ESP WEB FLASHER
 # =============================================================================
 
-# Instruções para gravação via navegador
+# Instruções para gravação via navegador.
 help-flasher:
-    Write-Host ""
-    Write-Host "=== ESP WEB FLASHER ==="
-    Write-Host ""
-    Write-Host "https://espressif.github.io/esptool-js/"
-    Write-Host ""
-    Write-Host "0x1000   -> bootloader.bin"
-    Write-Host "0x8000   -> partitions.bin"
-    Write-Host "0x10000  -> firmware.bin"
-    Write-Host "0x290000 -> spiffs.bin"
-    Write-Host ""
-    Write-Host "Flash Size: 4MB"
-    Write-Host "Baud: 115200"
+    echo ""
+    echo "=== ESP WEB FLASHER ==="
+    echo ""
+    echo "https://espressif.github.io/esptool-js/"
+    echo ""
+    echo "0x1000   -> bootloader.bin"
+    echo "0x8000   -> partitions.bin"
+    echo "0x10000  -> firmware.bin"
+    echo "0x290000 -> spiffs.bin"
+    echo ""
+    echo "Flash Size: 4MB"
+    echo "Baud: 115200"
 
 # =============================================================================
 # STATUS
 # =============================================================================
 
+# Mostra status básico do ambiente e estrutura do projeto.
 status:
-    Write-Host ""
-    Write-Host "================================="
-    Write-Host "KineLab - Status"
-    Write-Host "================================="
-    Write-Host ""
+    echo ""
+    echo "================================="
+    echo "KineLab - Status"
+    echo "================================="
+    echo ""
 
     pio --version
 
-    Write-Host ""
-    Write-Host "Arquivos do projeto:"
-    Get-ChildItem
+    echo ""
+    echo "Arquivos do projeto:"
+    find . -maxdepth 2 -mindepth 1 | sort

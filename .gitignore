@@ -1,0 +1,6 @@
+temp/
+*.bmp
+.pio/
+__pycache__/
+*.pyc
+get-platformio.py
